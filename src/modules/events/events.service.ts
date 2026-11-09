@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/postgresql';
 
@@ -22,6 +22,25 @@ export class EventsService {
 
         await this.eventRepository.getEntityManager().persist(event);
         await this.eventRepository.getEntityManager().flush();
+
+        return event;
+    }
+
+    async findAll(): Promise<EventEntity[]> {
+        return this.eventRepository.find(
+            {},
+            {
+                orderBy: { createdAt: 'DESC' },
+            },
+        );
+    }
+
+    async findOne(id: string): Promise<EventEntity> {
+        const event = await this.eventRepository.findOne({ id });
+
+        if (!event) {
+            throw new NotFoundException('Event not found');
+        }
 
         return event;
     }
